@@ -125,6 +125,7 @@ class Game extends React.Component {
             squares={current.squares}
             onClick={(i) => this.handleClick(i)}
           />
+          Hello world
         </div>
         <div className="game-info">
           <div>{status}</div>
