@@ -16,7 +16,6 @@ jobs:
           password: ${{ secrets.PASSWORD }}
           command_timeout: 5m
           script: |
-            cd ~/test
-            git pull origin master
+            git pull origin main
             yarn
             yarn build
