@@ -17,8 +17,7 @@ jobs:
           command_timeout: 5m
           script: |
             node -v
-            nvm use 14.17.0
-            cd /www/wwwroot/my-react-learning
+            cd ../www/wwwroot/my-react-learning
             git pull
             yarn
             yarn start
