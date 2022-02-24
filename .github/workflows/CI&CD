@@ -1,0 +1,54 @@
+name: CI-CD
+
+on:
+  push:
+  branches: [ main ]
+  workflow_dipatch:
+  
+jobs:
+  push_to_Docker_Hub:
+    runs-on: self-hosted
+    strategy:
+      matrix:
+        node-version: [14.x]
+    steps:
+      - name: checkout repo
+        uses: actions/checkout@v2
+
+      - name: Set up QEMU
+        id: qemu
+        uses: docker/setup-qemu-action@v1
+        with:
+          image: tonistiigi/binfmt:latest
+          platforms: all
+
+      - name: Login to DockerHub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v2
+        with:
+          context: ./
+          file: ./Dockerfile
+          push: true
+          tags ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.PROJECT_NAME }}:latest
+        
+        
+  run_on_container:
+    runs-on: self-hosted
+    needs: [push_to_Docker_Hub]
+    steps:
+      - name: Deploy to Digital Ocean droplet via SSH action
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          password: ${{ secrets.SSH_PASSWORD }}
+          image: ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.PROJECT_NAME }}:latest
+          scripts: |
+            docker stop ${{ secrets.CONTAINER_NAME }}
+            docker rm ${{ secrets.CONTAINER_NAME }}
+            docker run -d -p #{{ secrets.PORT }}:${{ secrets:PORT }} --name ${{ secrets.CONTAINER>NAME }} -t ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.PROJECT_NAME }}:latest
